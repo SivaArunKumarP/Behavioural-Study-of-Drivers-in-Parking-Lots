@@ -1,0 +1,122 @@
+#importing required libraries
+import carla
+import random
+import cv2
+import numpy as np
+
+#connecting to simulator
+client=carla.Client('localhost',2000)
+
+#loadin required town
+client.load_world('Town04')
+
+#geting places for spawning cars in world
+world=client.get_world()
+spawn_points=world.get_map().get_spawn_points()
+
+#getting blueprints of cars
+vehicle_bp=world.get_blueprint_library().filter('firetruck')
+
+#spawning a car
+st_pt=random.choice(spawn_points)
+vehicle=world.try_spawn_actor(vehicle_bp[0],st_pt)
+
+#viewing our car
+spect=world.get_spectator()
+st_pt.location.z=st_pt.location.z+1
+spect.set_transform(st_pt)
+
+#autopilot mode on
+vehicle.set_autopilot(True)
+
+#car positioning
+vehicle_pos=vehicle.get_transform()
+print(vehicle_pos)
+
+#autopilot mode on
+vehicle.set_autopilot(True)
+print(st_pt)
+vehicle_pos=vehicle.get_transform()
+print(vehicle_pos)
+
+#view of map town4
+town_map=world.get_map()
+
+type(town_map)
+
+#getting topology
+roads=town_map.get_topology()
+print(roads)
+
+#import sys for sim to define a route for our car
+import sys
+sys.path.append('E:/CAR/WindowsNoEditor/PythonAPI/carla')
+from agents.navigation.global_route_planner import GlobalRoutePlanner
+
+print(roads[0][0])
+
+#fixing two routes for our car to go
+sampling_resolution=2
+grp=GlobalRoutePlanner(town_map,sampling_resolution)
+point_a=carla.Location(x=388.481506, y=-134.744522, z=-0.009640)
+point_b=carla.Location(x=25.259499, y=-49.834530, z=1.488399)
+
+route=grp.trace_route(point_a,point_b)
+
+for waypoint in route:
+    world.debug.draw_string(waypoint[0].transform.location,'*',draw_shadow=False,
+                           color=carla.Color(r=0,g=255,b=255),life_time=120.0,
+                           persistent_lines=True)
+
+#utility script of destruction
+for actor in world.get_actors().filter('*vehicle*'):
+    actor.destroy()
+for sensor in world.get_actors().filter('*sensor*'):
+    sensor.destroy()
+
+#defining few more cars
+truck_bp=world.get_blueprint_library().filter('*firetruck*')
+mini_bp=world.get_blueprint_library().filter('*cooper_s*')
+truck=world.try_spawn_actor(truck_bp[0],st_pt)
+
+spect=world.get_spectator()
+spwan_points=world.get_map().get_spawn_points()
+st_pt=spwan_points[0]
+spectator_pos=carla.Transform(st_pt.location+carla.Location(x=20,y=10,z=4),
+                             carla.Rotation(yaw=st_pt.rotation.yaw -155))
+spect.set_transform(spectator_pos)
+
+mini=world.try_spawn_actor(mini_bp[0],st_pt)
+mini_pos=carla.Transform(st_pt.location+carla.Location(x=-4,z=10),
+                             carla.Rotation(yaw=st_pt.rotation.yaw -0))
+mini.set_transform(mini_pos)
+
+Hero_vehicle=world.try_spawn_actor(mini_bp[0],st_pt)
+mini_pos=carla.Transform(st_pt.location+carla.Location(x=-4,z=10),
+                             carla.Rotation(yaw=st_pt.rotation.yaw -0))
+
+#positiong hero vehicle and making it move
+Hero_vehicle.set_transform(mini_pos)
+Hero_vehicle.set_autopilot(True)
+
+
+# To import a basic agent
+from agents.navigation.basic_agent import BasicAgent
+
+# To import a behavior agent
+from agents.navigation.behavior_agent import BehaviorAgent
+
+
+agent = BasicAgent(Hero_vehicle)
+
+# To start a behavior agent with an aggressive profile
+agent = BehaviorAgent(Hero_vehicle, behavior='aggressive')
+destination = random.choice(point_b).location
+agent.set_destination(destination)
+
+while True:
+    if agent.done():
+        print("The target has been reached, stopping the simulation")
+        break
+
+    Hero_vehicle.apply_control(agent.run_step())
