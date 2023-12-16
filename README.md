@@ -3,7 +3,6 @@ Advanced project in autonomous vehicle navigation within parking lots, designed 
 # Behavioural Study of Drivers in Parking Lots
 
 ## Centre for Infrastructure, Sustainable Transportation, and Urban Planning
-### Indian Institute of Science (IISc), Bengaluru
 ### Siva Arun Kumar P
 
 ## Aim
@@ -17,9 +16,6 @@ We employ the semaphore concept to park the car in a parking lot, utilizing a wa
 
 ## Challenges
 As a newcomer to the simulator, understanding its basics took considerable time. Facing errors at the outset, including issues during the simulator's initialization, posed initial challenges. Limited knowledge of how built-in functions operate on simulations added complexity. Understanding various functions required more time than anticipated.
-
-## Results
-After activating the simulator in the prompt, successful integration of essential libraries, such as Numpy and Carla, was achieved. The Town 04 map was loaded, a hero car along with NPC cars and humans were spawned, and two waypoints were identified from which the hero car should move.
 
 ## Conclusion
 The project aims to enable the auto-steering of a vehicle from a designated point to a parking lot, facilitate parking using predetermined waypoints, and subsequently auto-steer the vehicle back to the road after a 5-minute interval.
